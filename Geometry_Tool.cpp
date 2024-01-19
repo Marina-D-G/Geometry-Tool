@@ -19,8 +19,8 @@
 const double EPSILON = 0.000001; //10^(-6), for numerical precision with float numbers
 const int SIZE = 100; //for the size of names
 
-struct Point {double x; double y; char pointName[SIZE];}; // x and y are the coordinates of the point
-struct Line {double a; double b; double c; char lineName[SIZE];}; // ax+by+c=0 - equation of line
+struct Point { double x; double y; char pointName[SIZE]; }; // x and y are the coordinates of the point
+struct Line { double a; double b; double c; char lineName[SIZE]; double m; double k; }; // ax+by+c=0 - general equation of line, y=mx+k - Cartesian equation
 
 bool isNameValid(char* name) //checks if name is valid
 {
@@ -41,11 +41,11 @@ bool isNameValid(char* name) //checks if name is valid
 	return true;
 }
 
-bool equalNames(char*name1, char*name2)
+bool equalNames(char* name1, char* name2)
 {
-	for (int i = 0; name1[i]==0||name2[i]==0; i++) //????????????????
+	for (int i = 0; name1[i]&&name2[i]; i++)
 	{
-		if (name1[i] != name2[i]) 
+		if (name1[i] != name2[i])
 		{
 			return false;
 		}
@@ -53,7 +53,7 @@ bool equalNames(char*name1, char*name2)
 	return true;
 }
 
-bool isPointExist(Point* pointRecord, Point& point_temp, int filledPoints)
+bool isPointExist(Point* pointRecord, Point& point_temp, int& filledPoints)
 {
 	for (int i = 0; i < filledPoints; i++)
 	{
@@ -66,7 +66,7 @@ bool isPointExist(Point* pointRecord, Point& point_temp, int filledPoints)
 	return false;
 }
 
-bool isLineExist(Line* lineRecord, Line&line_temp, int filledLines)
+bool isLineExist(Line* lineRecord, Line& line_temp, int& filledLines)
 {
 	for (int i = 0; i < filledLines; i++)
 	{
@@ -79,26 +79,27 @@ bool isLineExist(Line* lineRecord, Line&line_temp, int filledLines)
 	return false;
 }
 
-void inputPoint(Point*pointRecord, int& filledPoints) //define a geometric point with its coordinates
+void inputPoint(Point* pointRecord, int& filledPoints) //define a geometric point with its coordinates
 {
 	if (!pointRecord) //check for nullptr
 	{
 		return;
 	}
 
-	Point point_temp = {0, 0, 0};
+	Point point_temp {};
 	std::cout << "Please, input the coordinates of a point:";
 	std::cin >> point_temp.x >> point_temp.y;
 
 	std::cout << "Please, input a name for the point:";
-	std::cin >> point_temp.pointName;
+	std::cin>>point_temp.pointName;
 
 	while (!isNameValid(point_temp.pointName)) //if the name is not valid ask for a new name
 	{
 		std::cout << "Invalid input, please input another name: ";
 		std::cin >> point_temp.pointName;
 	}
-	*(pointRecord + filledPoints++) = point_temp; //when the name is valid, enter the point in the array with all points, increased by one the number of entered
+	*(pointRecord + filledPoints) = point_temp;
+	filledPoints++;  //when the name is valid, enter the point in the array with all points, increased by one the number of entered
 	std::cout << "You've input a point " << point_temp.pointName << "(" << point_temp.x << ", " << point_temp.y << ")" << std::endl;
 }
 
@@ -109,11 +110,13 @@ void inputLine(Line* lineRecord, int& filledLines) //define a geometric line wit
 		return;
 	}
 
-	Line line_temp = {0, 0, 0, 0};
-	std::cout << "Please, input the coefficients of a line:";
+	Line line_temp {};
+	std::cout << "Please, input the coefficients of a line: ";
 	std::cin >> line_temp.a >> line_temp.b >> line_temp.c;
+	line_temp.m = -line_temp.a / line_temp.b;
+	line_temp.k = -line_temp.c / line_temp.b; //m and k for Cartesian form
 
-	std::cout << "Please, input a name for the line:";
+	std::cout << "Please, input a name for the line: ";
 	std::cin >> line_temp.lineName;
 
 	while (!isNameValid(line_temp.lineName)) //if the name is not valid ask for a new name
@@ -128,8 +131,8 @@ void inputLine(Line* lineRecord, int& filledLines) //define a geometric line wit
 
 Point choosePoint(Point* pointRecord, int& filledPoints)
 {
-	Point point_temp = { 0, 0, 0};
-	if (pointRecord) //if we dont have any points
+	Point point_temp{};
+	if (!filledPoints) //if we dont have any points
 	{
 		inputPoint(pointRecord, filledPoints);
 		point_temp = *pointRecord; //the point is the only one we have
@@ -150,8 +153,8 @@ Point choosePoint(Point* pointRecord, int& filledPoints)
 
 Line chooseLine(Line* lineRecord, int& filledLines)
 {
-	Line line_temp = { 0, 0, 0, 0};
-	if (lineRecord) //if we dont have any points
+	Line line_temp{};
+	if (!filledLines) //if we dont have any points
 	{
 		inputLine(lineRecord, filledLines);
 		line_temp = *lineRecord; //the line is the only one we have
@@ -187,6 +190,22 @@ void isPointOnLine(Point pointRecord[], Line lineRecord[], int& filledPoints, in
 	}
 }
 
+void equationOfParallelLine(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+{
+	Point point = choosePoint(pointRecord, filledPoints);
+	Line line = chooseLine(lineRecord, filledLines);
+
+	int k_new = point.y - line.m * point.x;
+	if (k_new == line.k)
+	{
+		std::cout << "The point lies on the line already. The requested parallel line is the same as the given.";
+		return;
+	}
+
+	std::cout << "The equation of a line that is parallel to the given line and passes through the given point is: ";
+	std::cout << -line.m << "x + y + " << -k_new << " = 0" << std::endl;
+}
+
 int main()
 {
 	Point pointRecord[SIZE];
@@ -214,7 +233,7 @@ int main()
 		std::cout << "13. Exit" << std::endl;
 
 		std::cin >> choice;
-		
+
 		switch (choice)
 		{
 		case 1:
@@ -226,10 +245,12 @@ int main()
 			std::cout << std::endl;
 			break;
 		case 3:
-			isPointOnLine(pointRecord, lineRecord, filledLines, filledPoints);
+			isPointOnLine(pointRecord, lineRecord, filledPoints, filledLines);
 			std::cout << std::endl;
 			break;
 		case 4:
+			equationOfParallelLine(pointRecord, lineRecord, filledPoints, filledLines);
+			std::cout << std::endl;
 			break;
 		case 5:
 			break;
@@ -249,6 +270,7 @@ int main()
 		case 12:
 			break;
 		case 13:
+			std::cout << "Have a nice day!";
 			break;
 		default:
 			std::cout << "Please enter a valid option!" << std::endl;
@@ -258,5 +280,7 @@ int main()
 
 	} while (choice != 13);
 
+	return 0;
+}
 	return 0;
 }
