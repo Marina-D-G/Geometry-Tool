@@ -16,7 +16,7 @@
 #include <iostream>
 #include <cmath>
 
-const double EPSILON = 0.000001; //10^(-6), for numerical precision with float numbers
+const double EPSILON = 1e-6; //for numerical precision with float numbers
 const int SIZE = 100; //for the size of names
 
 struct Point { double x; double y; char pointName[SIZE]; }; // x and y are the coordinates of the point
@@ -88,6 +88,40 @@ bool isTriangleExist(Point point1, Point point2, Point point3)
 	return area;
 }
 
+bool isQuadrilateralExist(Point p1, Point p2, Point p3, Point p4)
+{
+	if (isnan(p1.x) || isnan(p2.x) || isnan(p3.x) || isnan(p4.x)) 
+	{
+		std::cout << "The lines are parallel or coincident. " << std::endl;
+		return false;
+	}
+
+	if ((p1.x == p2.x && p1.y == p2.y) || (p2.x == p3.x && p2.y == p3.y) || (p3.x == p4.x && p3.y == p4.y) || (p4.x == p1.x && p4.y == p1.y)) 
+	{
+		std::cout << "There are concurrent lines. " << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+Point intersectionTwoLines(Line line1, Line line2)
+{
+	Point point_temp{};
+	if (line1.m == line2.m)
+	{
+		point_temp.x = NAN;
+		point_temp.y = NAN;
+	}
+	else
+	{
+		point_temp.x = (line2.k - line1.k) / (line1.m - line2.m);
+		point_temp.y = line1.m * point_temp.x + line1.k;
+	}
+
+	return point_temp;
+}
+
 Line lineThroughTwoPoints(Point point1, Point point2)
 {
 	Line line_temp{};
@@ -96,6 +130,12 @@ Line lineThroughTwoPoints(Point point1, Point point2)
 	line_temp.b = point2.x - point1.x;
 	line_temp.c = point1.x * point2.y - point2.x * point1.y;
 	return line_temp;
+}
+
+double distanceBetweenTwoPoints(Point p1, Point p2)
+{
+	double dist = sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
+	return std::round(1000000 * dist) / 1000000.0;
 }
 
 Line altitude(Point p1, Point p2, Point h)
@@ -222,6 +262,7 @@ void chooseThreeValidPoints(Point* pointRecord, int& filledPoints, Point& point1
 		point3 = pointRecord[2];
 		break;
 	case 2:
+		point2 = choosePoint(pointRecord, filledPoints);
 		inputPoint(pointRecord, filledPoints);
 		point3 = pointRecord[2];
 		break;
@@ -252,6 +293,47 @@ Line chooseLine(Line* lineRecord, int& filledLines)
 		}
 	}
 	return line_temp;
+}
+
+void chooseFourValidLines(Line* lineRecord, int& filledLines, Line& line1, Line& line2, Line& line3, Line& line4)
+{
+	line1 = chooseLine(lineRecord, filledLines);
+	switch (filledLines) //to choose 4 valid lines
+	{
+	case 1:
+		inputLine(lineRecord, filledLines);
+		line2 = lineRecord[1];
+		inputLine(lineRecord, filledLines);
+		line3 = lineRecord[2];
+		inputLine(lineRecord, filledLines);
+		line4 = lineRecord[3];
+		break;
+	case 2:
+		line2 = chooseLine(lineRecord, filledLines);
+		inputLine(lineRecord, filledLines);
+		line3 = lineRecord[2];
+		inputLine(lineRecord, filledLines);
+		line4 = lineRecord[3];
+		break;
+	case 3:
+		line2 = chooseLine(lineRecord, filledLines);
+		line3 = chooseLine(lineRecord, filledLines);
+		inputLine(lineRecord, filledLines);
+		line4 = lineRecord[3];
+		break;
+	default:
+		line2 = chooseLine(lineRecord, filledLines);
+		line3 = chooseLine(lineRecord, filledLines);
+		line4 = chooseLine(lineRecord, filledLines);
+		break;
+	}
+
+	if (line1.m == line2.m) //make sure that the lines are defined consistently side by side
+	{
+		Line line_temp = line2;
+		line2 = line3;
+		line3 = line_temp;
+	}
 }
 
 void isPointOnLine(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines) //determines if a point lies on a line
@@ -313,7 +395,6 @@ void intersectionOfTwoLines(Line lineRecord[], int& filledLines)
 	{
 		line2 = chooseLine(lineRecord, filledLines);
 	}
-	Point point{};
 
 	if (line1.m == line2.m)
 	{
@@ -321,8 +402,7 @@ void intersectionOfTwoLines(Line lineRecord[], int& filledLines)
 		return;
 	}
 
-	point.x = (line2.k - line1.k) / (line1.m - line2.m);
-	point.y = line1.m * point.x + line1.k;
+	Point point = intersectionTwoLines(line1, line2);
 
 	std::cout << "The intersection point of the lines is (" << point.x << ", " << point.y << ")";
 }
@@ -478,6 +558,83 @@ void intersectionParabolaLine(Point pointRecord[], Line lineRecord[], int& fille
 	}
 }
 
+void findQuadrilateral(Line line1, Line line2, Line line3, Line line4, double dist1, double dist2, double dist3, double dist4)
+{
+	if (line1.m == line3.m && line2.m == line4.m)
+	{
+		// could be a parallelogram (opposite sides are parallel)
+		if (dist1 == dist3 && dist2 == dist4)
+		{
+			//could be a parallelogram, a rectangle or a square (opposite sides are equal)
+			if (line1.m == -1.0 / line2.m)
+			{
+				//could be a rectangle or a square (adjacent sides are perpendicular)
+				if (dist1 == dist2)
+				{
+					//it's a square (opposite sides are equal)
+					std::cout << "The quadrilateral is a square." << std::endl;
+				}
+				else
+				{
+					std::cout << "The quadrilateral is a rectangle." << std::endl;
+				}
+			}
+			else
+			{
+				std::cout << "The quadrilateral is a parallelogram." << std::endl;
+			}
+		}
+		else if (dist1 == dist3 || dist2 == dist4)
+		{
+			//could be a rhombus (adjacent sides are equal)
+			std::cout << "The quadrilateral is a rhombus." << std::endl;
+		}
+	}
+	else
+	{
+		// it's not a parallelogram
+		if (dist1 == dist3 && dist2 == dist4)
+		{
+			//it's a trapezoid (opposite sides are equal)
+			std::cout << "The quadrilateral is a trapezoid." << std::endl;
+		}
+		else
+		{
+			//it's a deltoid
+			std::cout << "The quadrilateral is a deltoid." << std::endl;
+		}
+	}
+}
+
+void typeOfQuadrilateral(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+{
+	Line line1{};
+	Line line2{};
+	Line line3{};
+	Line line4{};
+
+	chooseFourValidLines(lineRecord, filledLines, line1, line2, line3, line4);
+
+	Point point1 = intersectionTwoLines(line1, line2);
+	Point point2 = intersectionTwoLines(line2, line3);
+	Point point3 = intersectionTwoLines(line3, line4);
+	Point point4 = intersectionTwoLines(line4, line1); //vertices of quadrilateral
+
+	if (!isQuadrilateralExist(point1, point2, point3, point4))
+	{
+		std::cout << "These four lines do not form a quadrilateral.";
+		return;
+	}
+	std::cout << std::endl;
+
+	double dist1 = distanceBetweenTwoPoints(point1, point2);
+	double dist2 = distanceBetweenTwoPoints(point2, point3);
+	double dist3 = distanceBetweenTwoPoints(point3, point4);
+	double dist4 = distanceBetweenTwoPoints(point4, point1); //sizes of the sides
+
+	findQuadrilateral(line1, line2, line3, line4, dist1, dist2, dist3, dist4);
+}
+
 int main()
 {
 	Point pointRecord[SIZE];
@@ -553,6 +710,8 @@ int main()
 			std::cout << std::endl;
 			break;
 		case 12:
+			typeOfQuadrilateral(pointRecord, lineRecord, filledPoints, filledLines);
+			std::cout << std::endl;
 			break;
 		case 13:
 			std::cout << "Have a nice day!";
