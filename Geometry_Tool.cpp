@@ -22,7 +22,7 @@ const int SIZE = 100; //for the size of names
 struct Point { double x; double y; char pointName[SIZE]; }; // x and y are the coordinates of the point
 struct Line { double a; double b; double c; char lineName[SIZE]; double m; double k; };
 // ax+by+c=0 - general equation of line, y=mx+k - Cartesian equation
-struct Parabola { double a; double b; double c; }; //ax^2 + bx + c = 0
+struct Parabola { double a; double b; double c; }; //ax^2 + bx + c = y
 
 bool isNameValid(char* name) //checks if name is valid
 {
@@ -45,7 +45,7 @@ bool isNameValid(char* name) //checks if name is valid
 
 bool equalNames(char* name1, char* name2)
 {
-	for (int i = 0; name1[i]&&name2[i]; i++)
+	for (int i = 0; name1[i] && name2[i]; i++)
 	{
 		if (name1[i] != name2[i])
 		{
@@ -84,19 +84,19 @@ bool isLineExist(Line* lineRecord, Line& line_temp, int& filledLines)
 bool isTriangleExist(Point point1, Point point2, Point point3)
 //we can find out if triangle exists by calculating its area, if it is zero-it doesn't exist
 {
-	double area = 0.5*(point1.x*(point2.y-point3.y) + point2.x * (point3.y - point1.y) + point3.x * (point1.y - point2.y));
+	double area = 0.5 * (point1.x * (point2.y - point3.y) + point2.x * (point3.y - point1.y) + point3.x * (point1.y - point2.y));
 	return area;
 }
 
 bool isQuadrilateralExist(Point p1, Point p2, Point p3, Point p4)
 {
-	if (isnan(p1.x) || isnan(p2.x) || isnan(p3.x) || isnan(p4.x)) 
+	if (isnan(p1.x) || isnan(p2.x) || isnan(p3.x) || isnan(p4.x))
 	{
 		std::cout << "The lines are parallel or coincident. " << std::endl;
 		return false;
 	}
 
-	if ((p1.x == p2.x && p1.y == p2.y) || (p2.x == p3.x && p2.y == p3.y) || (p3.x == p4.x && p3.y == p4.y) || (p4.x == p1.x && p4.y == p1.y)) 
+	if ((p1.x == p2.x && p1.y == p2.y) || (p2.x == p3.x && p2.y == p3.y) || (p3.x == p4.x && p3.y == p4.y) || (p4.x == p1.x && p4.y == p1.y))
 	{
 		std::cout << "There are concurrent lines. " << std::endl;
 		return false;
@@ -141,8 +141,8 @@ double distanceBetweenTwoPoints(Point p1, Point p2)
 Line altitude(Point p1, Point p2, Point h)
 //the altitude is from h to the line that goes through p1 and p2
 {
-	Line line_temp = lineThroughTwoPoints(p1, p2); 
-	Line altitude {};
+	Line line_temp = lineThroughTwoPoints(p1, p2);
+	Line altitude{};
 	altitude.m = -1.0 / line_temp.m;
 	altitude.a = altitude.m;
 	altitude.b = 1.0;
@@ -185,12 +185,12 @@ void inputPoint(Point* pointRecord, int& filledPoints) //define a geometric poin
 		return;
 	}
 
-	Point point_temp {};
+	Point point_temp{};
 	std::cout << "Please, input the coordinates of a point:";
 	std::cin >> point_temp.x >> point_temp.y;
 
 	std::cout << "Please, input a name for the point:";
-	std::cin>>point_temp.pointName;
+	std::cin >> point_temp.pointName;
 
 	while (!isNameValid(point_temp.pointName)) //if the name is not valid ask for a new name
 	{
@@ -209,7 +209,7 @@ void inputLine(Line* lineRecord, int& filledLines) //define a geometric line wit
 		return;
 	}
 
-	Line line_temp {};
+	Line line_temp{};
 	std::cout << "Please, input the coefficients of a line: ";
 	std::cin >> line_temp.a >> line_temp.b >> line_temp.c;
 	line_temp.m = -line_temp.a / line_temp.b;
@@ -407,7 +407,7 @@ void intersectionOfTwoLines(Line lineRecord[], int& filledLines)
 	std::cout << "The intersection point of the lines is (" << point.x << ", " << point.y << ")";
 }
 
-void equationsOfAltitudes(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void equationsOfAltitudes(Point pointRecord[], int& filledPoints)
 {
 	Point point1{};
 	Point point2{};
@@ -415,7 +415,7 @@ void equationsOfAltitudes(Point pointRecord[], Line lineRecord[], int& filledPoi
 	chooseThreeValidPoints(pointRecord, filledPoints, point1, point2, point3);
 	if (!isTriangleExist(point1, point2, point3))
 	{
-		std::cout << "Тhese three points do not form a triangle.";
+		std::cout << "These three points do not form a triangle.";
 		return;
 	}
 	std::cout << std::endl;
@@ -436,15 +436,15 @@ void equationsOfAltitudes(Point pointRecord[], Line lineRecord[], int& filledPoi
 	std::cout << std::endl;
 }
 
-void equationsOfMedians(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void equationsOfMedians(Point pointRecord[], int& filledPoints)
 {
 	Point point1{};
 	Point point2{};
 	Point point3{};
 	chooseThreeValidPoints(pointRecord, filledPoints, point1, point2, point3);
-	if (!isTriangleExist(point1, point2, point3)) 
+	if (!isTriangleExist(point1, point2, point3))
 	{
-		std::cout << "Тhese three points do not form a triangle.";
+		std::cout << "These three points do not form a triangle.";
 		return;
 	}
 	std::cout << std::endl;
@@ -465,7 +465,7 @@ void equationsOfMedians(Point pointRecord[], Line lineRecord[], int& filledPoint
 	std::cout << std::endl;
 }
 
-void equationsOfPerpendicularBisectors(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void equationsOfPerpendicularBisectors(Point pointRecord[], int& filledPoints)
 {
 	Point point1{};
 	Point point2{};
@@ -473,13 +473,13 @@ void equationsOfPerpendicularBisectors(Point pointRecord[], Line lineRecord[], i
 	chooseThreeValidPoints(pointRecord, filledPoints, point1, point2, point3);
 	if (!isTriangleExist(point1, point2, point3))
 	{
-		std::cout << "Тhese three points do not form a triangle.";
+		std::cout << "These three points do not form a triangle.";
 		return;
 	}
 	std::cout << std::endl;
 
 	Line perpBisectorThrough12 = perpBisector(point1, point2); //the perpendicular bisector that passes the line through point1 and point2
-	std::cout << "The equation of the perpendicular bisector that passes the line through " << point1.pointName << " and "<<point2.pointName <<" in the triangle is: ";
+	std::cout << "The equation of the perpendicular bisector that passes the line through " << point1.pointName << " and " << point2.pointName << " in the triangle is: ";
 	std::cout << perpBisectorThrough12.a << "x + " << perpBisectorThrough12.b << "y + " << perpBisectorThrough12.c << " = 0" << std::endl;
 	std::cout << std::endl;
 
@@ -494,7 +494,7 @@ void equationsOfPerpendicularBisectors(Point pointRecord[], Line lineRecord[], i
 	std::cout << std::endl;
 }
 
-void tangentToParabola(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void tangentToParabola()
 {
 	Line tangent{};
 	Parabola parabola{}; //ax^2 + bx + c = 0 
@@ -504,7 +504,7 @@ void tangentToParabola(Point pointRecord[], Line lineRecord[], int& filledPoints
 	point.y = 0.0;
 	std::cout << "Please, enter the x-coordinate of a point on the real line (y=0): ";
 	std::cin >> point.x;
-	
+
 	tangent.m = 2 * parabola.a * point.x + parabola.b; //the derivative of the parabola
 	tangent.k = point.y - tangent.m * point.x; //find the line throught the given point
 
@@ -512,7 +512,7 @@ void tangentToParabola(Point pointRecord[], Line lineRecord[], int& filledPoints
 	std::cout << -tangent.m << "x + y + " << -tangent.k << " = 0" << std::endl;
 }
 
-void intersectionParabolaLine(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void intersectionParabolaLine(Line lineRecord[], int& filledLines)
 //Their intersection points are determined by the solutions of the system composed of their equations
 {
 	Line line = chooseLine(lineRecord, filledLines);
@@ -526,7 +526,7 @@ void intersectionParabolaLine(Point pointRecord[], Line lineRecord[], int& fille
 	// ax^2 +bx + c = mx + n
 	// ax^2 + (b-m)x + (c-k) = 0
 
-	double discriminant = b*b - 4.0 * a * c;
+	double discriminant = b * b - 4.0 * a * c;
 	if (discriminant >= 0.0)
 	{
 		Point point1{};
@@ -534,7 +534,7 @@ void intersectionParabolaLine(Point pointRecord[], Line lineRecord[], int& fille
 
 		point1.x = (-b + sqrt(discriminant)) / (2.0 * a);
 		std::ceil(10000 * point1.x) / 10000.0;
-		point1.y = line.m*point1.x + line.k ; //go back to the equation
+		point1.y = line.m * point1.x + line.k; //go back to the equation
 		std::ceil(10000 * point1.x) / 10000.0;
 
 		point2.x = (-b - sqrt(discriminant)) / (2.0 * a);
@@ -606,7 +606,7 @@ void findQuadrilateral(Line line1, Line line2, Line line3, Line line4, double di
 	}
 }
 
-void typeOfQuadrilateral(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void typeOfQuadrilateral(Line lineRecord[], int& filledLines)
 {
 	Line line1{};
 	Line line2{};
@@ -643,6 +643,10 @@ int main()
 	Line lineRecord[SIZE];
 	int filledLines = 0; //the number of the entered lines
 
+	std::cout << "Hello! Welcome to the program \"Geometry Tool\"" << std::endl;
+	std::cout << "You can make interactive selection of the following operations with geometric objects in the plane." << std::endl;
+	std::cout << std::endl;
+
 	short choice;
 
 	do {
@@ -662,6 +666,11 @@ int main()
 		std::cout << "13. Exit" << std::endl;
 
 		std::cin >> choice;
+		while (choice < 1 || choice > 13)
+		{
+			std::cout << "Invalid input. Try again!";
+			std::cin >> choice;
+		}
 
 		switch (choice)
 		{
@@ -690,31 +699,31 @@ int main()
 			std::cout << std::endl;
 			break;
 		case 7:
-			equationsOfAltitudes(pointRecord, lineRecord, filledPoints, filledLines);
+			equationsOfAltitudes(pointRecord, filledPoints);
 			std::cout << std::endl;
 			break;
 		case 8:
-			equationsOfMedians(pointRecord, lineRecord, filledPoints, filledLines);
+			equationsOfMedians(pointRecord, filledPoints);
 			std::cout << std::endl;
 			break;
 		case 9:
-			equationsOfPerpendicularBisectors(pointRecord, lineRecord, filledPoints, filledLines);
+			equationsOfPerpendicularBisectors(pointRecord, filledPoints);
 			std::cout << std::endl;
 			break;
 		case 10:
-			tangentToParabola(pointRecord, lineRecord, filledPoints, filledLines);
+			tangentToParabola();
 			std::cout << std::endl;
 			break;
 		case 11:
-			intersectionParabolaLine(pointRecord, lineRecord, filledPoints, filledLines);
+			intersectionParabolaLine(lineRecord, filledLines);
 			std::cout << std::endl;
 			break;
 		case 12:
-			typeOfQuadrilateral(pointRecord, lineRecord, filledPoints, filledLines);
+			typeOfQuadrilateral(lineRecord, filledLines);
 			std::cout << std::endl;
 			break;
 		case 13:
-			std::cout << "Have a nice day!";
+			std::cout << "Thank you. Have a nice day!";
 			break;
 		default:
 			std::cout << "Please enter a valid option!" << std::endl;
