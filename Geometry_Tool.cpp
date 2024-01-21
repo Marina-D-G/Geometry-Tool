@@ -20,7 +20,9 @@ const double EPSILON = 0.000001; //10^(-6), for numerical precision with float n
 const int SIZE = 100; //for the size of names
 
 struct Point { double x; double y; char pointName[SIZE]; }; // x and y are the coordinates of the point
-struct Line { double a; double b; double c; char lineName[SIZE]; double m; double k; }; // ax+by+c=0 - general equation of line, y=mx+k - Cartesian equation
+struct Line { double a; double b; double c; char lineName[SIZE]; double m; double k; };
+// ax+by+c=0 - general equation of line, y=mx+k - Cartesian equation
+struct Parabola { double a; double b; double c; }; //ax^2 + bx + c = 0
 
 bool isNameValid(char* name) //checks if name is valid
 {
@@ -383,7 +385,7 @@ void equationsOfMedians(Point pointRecord[], Line lineRecord[], int& filledPoint
 	std::cout << std::endl;
 }
 
-void equationsOfperpendicularBisectors(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+void equationsOfPerpendicularBisectors(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
 {
 	Point point1{};
 	Point point2{};
@@ -411,6 +413,71 @@ void equationsOfperpendicularBisectors(Point pointRecord[], Line lineRecord[], i
 	std::cout << perpBisectorThrough31.a << "x + " << perpBisectorThrough31.b << "y + " << perpBisectorThrough31.c << " = 0" << std::endl;
 	std::cout << std::endl;
 }
+
+void tangentToParabola(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+{
+	Line tangent{};
+	Parabola parabola{}; //ax^2 + bx + c = 0 
+	std::cout << "Please, enter the coefficients of a parabola: ";
+	std::cin >> parabola.a >> parabola.b >> parabola.c;
+	Point point{};
+	point.y = 0.0;
+	std::cout << "Please, enter the x-coordinate of a point on the real line (y=0): ";
+	std::cin >> point.x;
+	
+	tangent.m = 2 * parabola.a * point.x + parabola.b; //the derivative of the parabola
+	tangent.k = point.y - tangent.m * point.x; //find the line throught the given point
+
+	std::cout << "The equation of the tangent to the parabola at the given point is: ";
+	std::cout << -tangent.m << "x + y + " << -tangent.k << " = 0" << std::endl;
+}
+
+void intersectionParabolaLine(Point pointRecord[], Line lineRecord[], int& filledPoints, int& filledLines)
+//Their intersection points are determined by the solutions of the system composed of their equations
+{
+	Line line = chooseLine(lineRecord, filledLines);
+	Parabola parabola{}; //ax^2 + bx + c = 0 
+	std::cout << "Please, enter the coefficients of a parabola: ";
+	std::cin >> parabola.a >> parabola.b >> parabola.c;
+
+	double a = parabola.a;
+	double b = parabola.b - line.m;
+	double c = parabola.c - line.k; //these are the coefficients of the quadratic equation representing the system of equations
+	// ax^2 +bx + c = mx + n
+	// ax^2 + (b-m)x + (c-k) = 0
+
+	double discriminant = b*b - 4.0 * a * c;
+	if (discriminant >= 0.0)
+	{
+		Point point1{};
+		Point point2{}; //these are the intersection points
+
+		point1.x = (-b + sqrt(discriminant)) / (2.0 * a);
+		std::ceil(10000 * point1.x) / 10000.0;
+		point1.y = line.m*point1.x + line.k ; //go back to the equation
+		std::ceil(10000 * point1.x) / 10000.0;
+
+		point2.x = (-b - sqrt(discriminant)) / (2.0 * a);
+		std::ceil(10000 * point2.x) / 10000.0;
+		point2.y = line.m * point2.x + line.k;
+		std::ceil(10000 * point1.x) / 10000.0;
+
+		if (discriminant < EPSILON) //the discriminant is zero / the points are the same
+		{
+			std::cout << "The line and the parabola have one intersection point -> (" << point1.x << ", " << point1.y << ")";
+		}
+		else
+		{
+			std::cout << "The line and the parabola have two intersection points -> (";
+			std::cout << point1.x << ", " << point1.y << ") and (" << point2.x << ", " << point2.y << ")";
+		}
+	}
+	else
+	{
+		std::cout << "Тhe line and the parabola have no intersection points.";
+	}
+}
+
 int main()
 {
 	Point pointRecord[SIZE];
@@ -474,13 +541,16 @@ int main()
 			std::cout << std::endl;
 			break;
 		case 9:
-			equationsOfperpendicularBisectors(pointRecord, lineRecord, filledPoints, filledLines);
+			equationsOfPerpendicularBisectors(pointRecord, lineRecord, filledPoints, filledLines);
 			std::cout << std::endl;
 			break;
 		case 10:
+			tangentToParabola(pointRecord, lineRecord, filledPoints, filledLines);
+			std::cout << std::endl;
 			break;
 		case 11:
-			std::cout << "test";
+			intersectionParabolaLine(pointRecord, lineRecord, filledPoints, filledLines);
+			std::cout << std::endl;
 			break;
 		case 12:
 			break;
